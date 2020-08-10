@@ -12,33 +12,30 @@ interface State {
   parameterType: string;
   organizationList: any[];
   tagsData: any[];
-  tagsValue: any;
 }
 
 const Search: React.FC<Props> = props => {
 
   const {
     form,
-    form: {getFieldDecorator},
+    form: {getFieldDecorator, setFieldsValue},
   } = props;
 
   const initState: State = {
-    parameterType: 'id',
+    parameterType: 'id$like',
     organizationList: [],
     tagsData: [],
-    tagsValue: undefined,
   };
 
   const [parameterType, setParameterType] = useState(initState.parameterType);
   const [organizationList, setOrganizationList] = useState(initState.organizationList);
   const [tagsVisible, setTagsVisible] = useState(false);
-  const [tagsValue, setTagsValue] = useState(initState.tagsValue);
   const [tagsData, setTagsData] = useState(initState.tagsData);
   const [categoryList, setCategoryList] = useState([]);
 
   useEffect(() => {
-    setParameterType('id');
-    form.setFieldsValue({parameter: 'id'});
+    setParameterType('id$like');
+    form.setFieldsValue({parameter: 'id$like'});
 
     apis.deviceProdcut.queryOrganization()
       .then(res => {
@@ -84,7 +81,7 @@ const Search: React.FC<Props> = props => {
 
   const renderType = () => {
     switch (parameterType) {
-      case 'id':
+      case 'id$like':
       case 'name$like':
         return (
           <>
@@ -109,9 +106,7 @@ const Search: React.FC<Props> = props => {
       case 'id$dev-tag':
         return (
           <>
-            {getFieldDecorator('value', {
-              initialValue: tagsValue
-            })(
+            {getFieldDecorator('value', {})(
               <Input placeholder="点击选择设备标签" onClick={() => {
                 setTagsVisible(true);
               }} style={{width: 'calc(100% - 100px)'}}/>
@@ -158,9 +153,10 @@ const Search: React.FC<Props> = props => {
             })(
               <Select style={{width: 100}} placeholder="请选择"
                       onChange={(value: string) => {
+                        setFieldsValue({'value': undefined});
                         setParameterType(value);
                       }}>
-                <Select.Option value="id" key="id">设备ID</Select.Option>
+                <Select.Option value="id$like" key="id$like">设备ID</Select.Option>
                 <Select.Option value="name$like" key="name$like">设备名称</Select.Option>
                 <Select.Option value="orgId$in" key="orgId$in">所属机构</Select.Option>
                 <Select.Option value="id$dev-tag" key="id$dev-tag">设备标签</Select.Option>
@@ -184,9 +180,9 @@ const Search: React.FC<Props> = props => {
           </Button>
           <Button style={{marginLeft: 8}} onClick={() => {
             form.resetFields();
-            form.setFieldsValue({parameter: 'id', value: undefined});
-            setParameterType('id');
-            setTagsValue(undefined);
+            form.setFieldsValue({parameter: 'id$like', value: undefined});
+            setParameterType('id$like');
+            setFieldsValue({'value': undefined});
             setTagsData([]);
             props.search({});
           }}>
@@ -204,7 +200,7 @@ const Search: React.FC<Props> = props => {
                       item.map((item: any) => {
                         displayData.push(`${item.key}=${item.value}`);
                       });
-                      setTagsValue(displayData.join('；'));
+                      setFieldsValue({'value': displayData.join('；')});
                       setTagsData(item);
                       setTagsVisible(false);
                     }}

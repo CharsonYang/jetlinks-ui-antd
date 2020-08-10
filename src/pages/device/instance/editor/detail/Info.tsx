@@ -81,7 +81,7 @@ const Info: React.FC<Props> = (props) => {
       <Card style={{marginBottom: 20}}>
         <Descriptions style={{marginBottom: 20}} bordered column={3} size="small"
                       title={<span>设备信息</span>}>
-          <Descriptions.Item label="设备产品" span={1}>
+          <Descriptions.Item label="产品名称" span={1}>
             {props.data.productName}
           </Descriptions.Item>
           <Descriptions.Item label="设备类型" span={1}>
@@ -151,7 +151,7 @@ const Info: React.FC<Props> = (props) => {
               <Descriptions.Item label={item.property} span={1} key={item.property}>
                 {props.data.configuration ? (
                   item.type.type === 'password' ? (
-                      props.data.configuration[item.property].length > 0 ? '••••••' : null
+                      props.data.configuration[item.property]?.length > 0 ? '••••••' : null
                     ) :
                     props.data.configuration[item.property]
                 ) : null}

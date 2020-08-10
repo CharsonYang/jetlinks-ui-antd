@@ -9,7 +9,7 @@ const subs = {};
 let timer: any = {};
 const initWebSocket = () => {
     clearInterval(timer);
-    const wsUrl = `${document.location.protocol.replace('http', 'ws')}//${document.location.host}/jetlinks/messaging/${getAccessToken()}`;
+    const wsUrl = `${document.location.protocol.replace('http', 'ws')}//${document.location.host}/jetlinks/messaging/${getAccessToken()}?:X_Access_Token=${getAccessToken()}`;
     if (!ws && count < 5) {
         try {
             count += 1;
@@ -37,11 +37,16 @@ const initWebSocket = () => {
                 }
             }
         } catch (error) {
-            console.log(error, 'rrrr');
             setTimeout(initWebSocket, 5000 * count);
         }
     }
-    timer = setInterval(() => ws?.send(JSON.stringify({ "type": "ping" })), 60000);
+    timer = setInterval(() => {
+        try {
+            ws?.send(JSON.stringify({ "type": "ping" }))
+        } catch (error) {
+            console.error(error, '发送心跳错误');
+        }
+    }, 2000);
     return ws;
 }
 

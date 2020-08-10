@@ -1,24 +1,24 @@
 import { Avatar, Icon, Menu, Spin } from 'antd';
 import { ClickParam } from 'antd/es/menu';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { connect } from 'dva';
 import router from 'umi/router';
 import { ConnectProps, ConnectState } from '@/models/connect';
 import { CurrentUser } from '@/models/user';
 import HeaderDropdown from '../HeaderDropdown';
 import styles from './index.less';
+import Service from '@/pages/account/settings/service';
 
 export interface GlobalHeaderRightProps extends ConnectProps {
   currentUser?: CurrentUser;
   menu?: boolean;
 }
-
-class AvatarDropdown extends React.Component<GlobalHeaderRightProps> {
-  onMenuClick = (event: ClickParam) => {
+const AvatarDropdown: React.FC<GlobalHeaderRightProps> = (props) => {
+  const onMenuClick = (event: ClickParam) => {
     const { key } = event;
 
     if (key === 'logout') {
-      const { dispatch } = this.props;
+      const { dispatch } = props;
 
       if (dispatch) {
         dispatch({
@@ -28,48 +28,53 @@ class AvatarDropdown extends React.Component<GlobalHeaderRightProps> {
 
       return;
     }
-
     router.push(`/account/${key}`);
   };
 
-  render(): React.ReactNode {
-    const {
-      currentUser = {
-        avatar: '',
-        name: '',
-      },
-      menu,
-    } = this.props;
-    const menuHeaderDropdown = (
-      <Menu className={styles.menu} selectedKeys={[]} onClick={this.onMenuClick}>
-        {menu && (
-          <Menu.Item key="center">
-            <Icon type="user" />
-            个人中心
-          </Menu.Item>
-        )}
-        {menu && (
-          <Menu.Item key="settings">
-            <Icon type="setting" />
-            个人设置
-          </Menu.Item>
-        )}
-        {menu && <Menu.Divider />}
+  const [user, setUser] = useState<any>({});
+  const service = new Service('user/detail');
 
-        <Menu.Item key="logout">
-          <Icon type="logout" />
+  const {
+    currentUser = {
+      avatar: user.avatar || '',
+      name: '',
+    },
+  } = props;
+
+  useEffect(() => {
+    service.get().subscribe((resp) => {
+      setUser(resp);
+      // localStorage.setItem('tenants-admin', resp.tenants[0]?.adminMember);
+    })
+  }, [currentUser]);
+
+
+  const menuHeaderDropdown = (
+    <Menu className={styles.menu} selectedKeys={[]} onClick={onMenuClick}>
+      {/* <Menu.Item key="center">
+          <Icon type="user" />
+            个人中心
+        </Menu.Item> */}
+      <Menu.Item key="settings">
+        <Icon type="setting" />
+            个人设置
+        </Menu.Item>
+      <Menu.Divider />
+
+      <Menu.Item key="logout">
+        <Icon type="logout" />
           退出登录
         </Menu.Item>
-      </Menu>
-    );
-    return currentUser && currentUser.name ? (
-      <HeaderDropdown overlay={menuHeaderDropdown}>
-        <span className={`${styles.action} ${styles.account}`}>
-          <Avatar size="small" className={styles.avatar} src={currentUser.avatar} alt="avatar" />
-          <span className={styles.name}>{currentUser.name}</span>
-        </span>
-      </HeaderDropdown>
-    ) : (
+    </Menu>
+  );
+  return currentUser && currentUser.name ? (
+    <HeaderDropdown overlay={menuHeaderDropdown}>
+      <span className={`${styles.action} ${styles.account}`}>
+        <Avatar size="small" className={styles.avatar} src={user.avatar} alt="avatar" />
+        <span className={styles.name}>{currentUser.name}</span>
+      </span>
+    </HeaderDropdown>
+  ) : (
       <Spin
         size="small"
         style={{
@@ -78,8 +83,9 @@ class AvatarDropdown extends React.Component<GlobalHeaderRightProps> {
         }}
       />
     );
-  }
 }
+// class AvatarDropdown extends React.Component<GlobalHeaderRightProps> {
+// }
 
 export default connect(({ user }: ConnectState) => ({
   currentUser: user.currentUser,
